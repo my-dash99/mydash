@@ -1,0 +1,73 @@
+name: Sync Strava Data
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      auth_code:
+        description: 'Masukkan Code dari URL Strava (Opsional)'
+        required: false
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Environment
+        run: mkdir -p data
+
+      - name: Exchange Auth Code (Hanya jika input diisi)
+        if: "${{ github.event.inputs.auth_code != '' }}"
+        run: |
+          echo "Menukarkan Code menjadi Refresh Token..."
+          curl -X POST https://www.strava.com/api/v3/oauth/token \
+            -d client_id=${{ secrets.STRAVA_CLIENT_ID }} \
+            -d client_secret=${{ secrets.STRAVA_CLIENT_SECRET }} \
+            -d code=${{ github.event.inputs.auth_code }} \
+            -d grant_type=authorization_code > new_token.json
+          
+          echo "---------------------------------------------------"
+          echo "SALIN REFRESH TOKEN DI BAWAH INI KE GITHUB SECRETS:"
+          jq -r .refresh_token new_token.json
+          echo "---------------------------------------------------"
+
+      - name: Get Activities with Refresh Token
+        run: |
+          # 1. Ambil Access Token baru menggunakan Refresh Token dari Secrets
+          curl -X POST https://www.strava.com/api/v3/oauth/token \
+            -d client_id=${{ secrets.STRAVA_CLIENT_ID }} \
+            -d client_secret=${{ secrets.STRAVA_CLIENT_SECRET }} \
+            -d refresh_token=${{ secrets.STRAVA_REFRESH_TOKEN }} \
+            -d grant_type=refresh_token > token_output.json
+            
+          ACCESS_TOKEN=$(jq -r .access_token token_output.json)
+          
+          # 2. Ambil 30 aktivitas terbaru (buffer agar tidak ada yang terlewat)
+          curl -X GET "https://www.strava.com/api/v3/athlete/activities?per_page=30" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" > data/latest_fetch.json
+
+          # 3. Logika Penggabungan (Incremental Update)
+          # Jika file activities.json belum ada, inisialisasi sebagai array kosong
+          if [ ! -f data/activities.json ]; then
+            echo "[]" > data/activities.json
+          fi
+
+          # Gunakan jq untuk menggabungkan, membuang duplikat ID, dan mengurutkan ulang
+          jq -s 'add | unique_by(.id) | sort_by(.start_date) | reverse' \
+            data/activities.json data/latest_fetch.json > data/temp_combined.json
+          
+          # Simpan hasil gabungan kembali ke file utama
+          mv data/temp_combined.json data/activities.json
+          
+          # Bersihkan file sampah
+          rm data/latest_fetch.json
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'Strava Bot'
+          git config --global user.email 'bot@github.com'
+          git add data/activities.json
+          # Commit hanya jika ada perubahan pada file json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update Strava data: $(date +'%Y-%m-%d')" && git push)

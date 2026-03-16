@@ -1,0 +1,151 @@
+/* css/style.css
+
+/* --- CSS VARIABLES (Design System) --- */
+:root {
+    /* Brand Colors */
+    --strava-orange: #FC4C02;
+    --strava-orange-dark: #E34402;
+    
+    /* Neutral Colors */
+    --bg-main: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --border-color: #F1F5F9;
+    
+    /* Typography */
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Spacing & Radius */
+    --radius-xl: 1.5rem;   /* 24px */
+    --radius-lg: 1rem;     /* 16px */
+    --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- RESET & BASE --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+/* --- MODERN TYPOGRAPHY --- */
+h1, h2, h3, .font-heading {
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    font-style: italic;
+    text-transform: uppercase;
+}
+
+.stats-value {
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.05em;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.label-muted {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* --- NAVIGATION & LINKS --- */
+.nav-link {
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    transition: var(--transition-base);
+}
+
+.nav-link:hover {
+    color: var(--text-secondary);
+}
+
+.router-link-active.nav-link {
+    color: var(--strava-orange);
+    border-bottom-color: var(--strava-orange);
+}
+
+/* --- REUSABLE COMPONENTS --- */
+.card-modern {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    transition: var(--transition-base);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.card-modern:hover {
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+    border-color: #E2E8F0;
+}
+
+.btn-strava {
+    background-color: var(--strava-orange);
+    color: white !important;
+    padding: 1.25rem 2rem;
+    border-radius: var(--radius-lg);
+    font-weight: 900;
+    font-style: italic;
+    text-align: center;
+    text-decoration: none;
+    transition: var(--transition-base);
+    display: block;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-strava:hover {
+    background-color: var(--strava-orange-dark);
+    box-shadow: 0 8px 16px -4px rgba(252, 76, 2, 0.3);
+    transform: scale(1.01);
+}
+
+/* --- CUSTOM SCROLLBAR --- */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* --- MAP FIXES --- */
+#map {
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Leaflet control custom styling */
+.leaflet-container {
+    font-family: var(--font-main) !important;
+}
+
+/* --- TRANSITIONS --- */
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
